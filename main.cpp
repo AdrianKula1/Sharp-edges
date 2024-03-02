@@ -5,7 +5,7 @@
 #include <memory>
 #include <random>
 
-#define ShapeUPointer std::unique_ptr<CustomCircleShape>
+#define ShapeUPointer std::shared_ptr<sf::Shape>
 #define ShapeSize 100
 
 
@@ -36,22 +36,21 @@ void drawAllShapes(sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &
 
 void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
     for (const ShapeUPointer& shape : shapes) {
-        shape->setPosition(shape->getPosition().x, shape->getPosition().y + (shape->getRadius() / 2));
+        shape->setPosition(shape->getPosition().x, shape->getPosition().y + (ShapeSize / 2));
     }    
 }
 
 
 void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
+    std::unordered_set<ShapeUPointer>::iterator shapeToErase;
     for (const ShapeUPointer& shape : shapes) {
-        if (shape->isCursorHovering(window)) {
-            if (shape->getFillColor() == sf::Color::Green) {
-                shape->setFillColor(sf::Color::Blue);
-            }
-            else {
-                shape->setFillColor(sf::Color::Green);
-            }
+        auto customCircleShape = std::dynamic_pointer_cast<CustomCircleShape>(shape);
+        if (customCircleShape->isCursorHovering(window)) {
+            shapeToErase = shapes.find(shape);
         }
     }
+
+    shapes.erase(shapeToErase);
 }
 
 int main()
@@ -71,7 +70,7 @@ int main()
         sf::Event event;
 
         if (oneSecondPassed(clock1s)) {
-            shape.setPosition(shape.getPosition().x, shape.getPosition().y + (shape.getRadius() / 2));
+            shape.setPosition(shape.getPosition().x, shape.getPosition().y + (ShapeSize / 2));
             makeAllShapesFall(shapes);
         }
 
