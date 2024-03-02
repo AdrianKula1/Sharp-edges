@@ -5,14 +5,23 @@
 #include <memory>
 #include <random>
 
-#define ShapeUPointer std::unique_ptr<sf::Shape>
+#define ShapeUPointer std::unique_ptr<CustomCircleShape>
 #define ShapeSize 100
 
 
-bool secondPassed(sf::Clock &clock) {
+bool oneSecondPassed(sf::Clock &clock) {
     bool result = false;
     sf::Time elapsedTime = clock.getElapsedTime();
     if (elapsedTime.asSeconds() >= 1.0f) {
+        clock.restart();
+        result = true;
+    }
+    return result;
+}
+bool threeSecondsPassed(sf::Clock &clock) {
+    bool result = false;
+    sf::Time elapsedTime = clock.getElapsedTime();
+    if (elapsedTime.asSeconds() >= 3.0f) {
         clock.restart();
         result = true;
     }
@@ -25,6 +34,13 @@ void drawAllShapes(sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &
     }
 }
 
+void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
+    for (const ShapeUPointer& shape : shapes) {
+        shape->setPosition(shape->getPosition().x, shape->getPosition().y + (shape->getRadius() / 2));
+    }
+    
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
@@ -32,7 +48,8 @@ int main()
     shape.setPosition(0, 0);
     shape.setFillColor(sf::Color::Green);
 
-    sf::Clock clock;
+    sf::Clock clock1s;
+    sf::Clock clock3s;
 
     std::unordered_set<ShapeUPointer> shapes;
 
@@ -40,34 +57,41 @@ int main()
     {
         sf::Event event;
 
-
-
-        if (secondPassed(clock)) {
+        if (oneSecondPassed(clock1s)) {
             shape.setPosition(shape.getPosition().x, shape.getPosition().y + (shape.getRadius() / 2));
+            makeAllShapesFall(shapes);
+        }
 
+        if (threeSecondsPassed(clock3s)) {
             std::unique_ptr<CustomCircleShape> newShape = std::make_unique<CustomCircleShape>(100);
-            newShape->setFillColor(sf::Color::Red);
+            sf::Color randomColor = sf::Color(
+                std::rand() % 256, //Red
+                std::rand() % 256, //Green
+                std::rand() % 256  //Blue
+            );
+            newShape->setFillColor(randomColor);
             int StartPositionX = rand() % (window.getSize().x - ShapeSize);
             int StartPositionY = 0;
             newShape->setPosition(StartPositionX, StartPositionY);
             shapes.insert(std::move(newShape));
         }
 
-        while (window.pollEvent(event))
-        {
+        while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
-            if (event.type == sf::Event::MouseButtonPressed &&
-                shape.isCursorHovering(window) && 
-                (event.mouseButton.button == sf::Mouse::Left)) {
-                if (shape.getFillColor() == sf::Color::Green) {
-                    shape.setFillColor(sf::Color::Blue);
+            if ( (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Left)){
+                for (const ShapeUPointer &shape : shapes) {
+                    if (shape->isCursorHovering(window)) {
+                        if (shape->getFillColor() == sf::Color::Green) {
+                            shape->setFillColor(sf::Color::Blue);
+                        }
+                        else {
+                            shape->setFillColor(sf::Color::Green);
+                        }
+                    }
                 }
-                else {
-                    shape.setFillColor(sf::Color::Green);
-                }
-            }
+            }   
         }
         
         window.clear();
