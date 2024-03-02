@@ -1,6 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include "Resources/Classes/CustomCircleShape.h"
 
+#include <unordered_set>
+#include <memory>
+
+#define ShapeUPointer std::unique_ptr<sf::Shape>
+
+bool secondPassed(sf::Clock &clock) {
+    bool result = false;
+    sf::Time elapsedTime = clock.getElapsedTime();
+    if (elapsedTime.asSeconds() >= 1.0f) {
+        clock.restart();
+        result = true;
+    }
+    return result;
+}
 
 int main()
 {
@@ -10,15 +24,14 @@ int main()
 
     sf::Clock clock;
 
+    std::unordered_set<ShapeUPointer> shapes;
+
     while (window.isOpen())
     {
         sf::Event event;
 
-        sf::Time elapsedTime = clock.getElapsedTime();
-
-        if (elapsedTime.asSeconds() >= 1.0f) {
+        if (secondPassed(clock)) {
             shape.setPosition(shape.getPosition().x, shape.getPosition().y + (shape.getRadius() / 2));
-            clock.restart();
         }
 
         while (window.pollEvent(event))
