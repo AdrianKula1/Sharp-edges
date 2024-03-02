@@ -18,12 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Resources\Classes\CustomShape.cpp">
+    <ClCompile Include="Resources\Classes\CustomCircleShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resources\Classes\CustomShape.h">
+    <ClInclude Include="Resources\Classes\CustomCircleShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

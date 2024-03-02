@@ -1,10 +1,10 @@
 #include <SFML/Graphics.hpp>
-
+#include "Resources/Classes/CustomCircleShape.h"
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    sf::CircleShape shape(100.0f);
+    CustomCircleShape shape(100.0f);
     shape.setFillColor(sf::Color::Green);
 
     while (window.isOpen())
@@ -14,6 +14,16 @@ int main()
         {
             if (event.type == sf::Event::Closed) {
                 window.close();
+            }
+            if (event.type == sf::Event::MouseButtonPressed &&
+                shape.isCursorHovering(window) && 
+                (event.mouseButton.button == sf::Mouse::Left)) {
+                if (shape.getFillColor() == sf::Color::Green) {
+                    shape.setFillColor(sf::Color::Blue);
+                }
+                else {
+                    shape.setFillColor(sf::Color::Green);
+                }
             }
         }
 
