@@ -3,8 +3,11 @@
 
 #include <unordered_set>
 #include <memory>
+#include <random>
 
 #define ShapeUPointer std::unique_ptr<sf::Shape>
+#define ShapeSize 100
+
 
 bool secondPassed(sf::Clock &clock) {
     bool result = false;
@@ -16,10 +19,17 @@ bool secondPassed(sf::Clock &clock) {
     return result;
 }
 
+void drawAllShapes(sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
+    for (const ShapeUPointer &shape : shapes) {
+        window.draw((*shape));
+    }
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
     CustomCircleShape shape(100.0f);
+    shape.setPosition(0, 0);
     shape.setFillColor(sf::Color::Green);
 
     sf::Clock clock;
@@ -30,8 +40,17 @@ int main()
     {
         sf::Event event;
 
+
+
         if (secondPassed(clock)) {
             shape.setPosition(shape.getPosition().x, shape.getPosition().y + (shape.getRadius() / 2));
+
+            std::unique_ptr<CustomCircleShape> newShape = std::make_unique<CustomCircleShape>(100);
+            newShape->setFillColor(sf::Color::Red);
+            int StartPositionX = rand() % (window.getSize().x - ShapeSize);
+            int StartPositionY = 0;
+            newShape->setPosition(StartPositionX, StartPositionY);
+            shapes.insert(std::move(newShape));
         }
 
         while (window.pollEvent(event))
@@ -50,9 +69,10 @@ int main()
                 }
             }
         }
-
+        
         window.clear();
         window.draw(shape);
+        drawAllShapes(window, shapes);
         window.display();
     }
 
