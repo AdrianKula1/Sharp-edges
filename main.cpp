@@ -37,8 +37,21 @@ void drawAllShapes(sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &
 void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
     for (const ShapeUPointer& shape : shapes) {
         shape->setPosition(shape->getPosition().x, shape->getPosition().y + (shape->getRadius() / 2));
+    }    
+}
+
+
+void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
+    for (const ShapeUPointer& shape : shapes) {
+        if (shape->isCursorHovering(window)) {
+            if (shape->getFillColor() == sf::Color::Green) {
+                shape->setFillColor(sf::Color::Blue);
+            }
+            else {
+                shape->setFillColor(sf::Color::Green);
+            }
+        }
     }
-    
 }
 
 int main()
@@ -81,16 +94,7 @@ int main()
                 window.close();
             }
             if ( (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Left)){
-                for (const ShapeUPointer &shape : shapes) {
-                    if (shape->isCursorHovering(window)) {
-                        if (shape->getFillColor() == sf::Color::Green) {
-                            shape->setFillColor(sf::Color::Blue);
-                        }
-                        else {
-                            shape->setFillColor(sf::Color::Green);
-                        }
-                    }
-                }
+                shapeClicked(window, shapes);
             }   
         }
         

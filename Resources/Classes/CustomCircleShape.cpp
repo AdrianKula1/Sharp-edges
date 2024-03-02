@@ -3,7 +3,7 @@
 
 CustomCircleShape::CustomCircleShape(float radius) : CircleShape(radius) {}
 
-bool CustomCircleShape::isCursorHovering(sf::Window &window) {
+bool CustomCircleShape::isCursorHovering(const sf::Window &window) {
     sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
     //sf::CircleShape::getPosition() returns uper right corner of the shape
     sf::Vector2f circlePosition = sf::CircleShape::getPosition();
