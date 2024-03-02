@@ -1,15 +1,26 @@
 #include <SFML/Graphics.hpp>
 #include "Resources/Classes/CustomCircleShape.h"
 
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
+    sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
     CustomCircleShape shape(100.0f);
     shape.setFillColor(sf::Color::Green);
+
+    sf::Clock clock;
 
     while (window.isOpen())
     {
         sf::Event event;
+
+        sf::Time elapsedTime = clock.getElapsedTime();
+
+        if (elapsedTime.asSeconds() >= 1.0f) {
+            shape.setPosition(shape.getPosition().x, shape.getPosition().y + (shape.getRadius() / 2));
+            clock.restart();
+        }
+
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed) {
