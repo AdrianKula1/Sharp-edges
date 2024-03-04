@@ -1,9 +1,11 @@
 #include <SFML/Graphics.hpp>
 #include "Resources/Classes/CustomCircleShape.h"
+#include "Resources/Classes/CustomRectangleShape.h"
 
 #include <unordered_set>
 #include <memory>
 #include <random>
+#include <iostream>
 
 #define ShapeUPointer std::shared_ptr<sf::Shape>
 #define ShapeSize 100
@@ -42,15 +44,19 @@ void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
 
 
 void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
-    std::unordered_set<ShapeUPointer>::iterator shapeToErase;
+    std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();;
     for (const ShapeUPointer& shape : shapes) {
-        auto customCircleShape = std::dynamic_pointer_cast<CustomCircleShape>(shape);
+        auto customCircleShape = std::dynamic_pointer_cast<CustomRectangleShape>(shape);
         if (customCircleShape->isCursorHovering(window)) {
             shapeToErase = shapes.find(shape);
         }
     }
 
-    shapes.erase(shapeToErase);
+
+    if (shapeToErase != shapes.end()) {
+        shapes.erase(shapeToErase);
+    }
+    
 }
 
 int main()
@@ -75,7 +81,8 @@ int main()
         }
 
         if (threeSecondsPassed(clock3s)) {
-            std::unique_ptr<CustomCircleShape> newShape = std::make_unique<CustomCircleShape>(100);
+            //std::unique_ptr<CustomCircleShape> newShape = std::make_unique<CustomCircleShape>(100);
+            std::unique_ptr<CustomRectangleShape> newShape = std::make_unique<CustomRectangleShape>(sf::Vector2f{100, 100});
             sf::Color randomColor = sf::Color(
                 std::rand() % 256, //Red
                 std::rand() % 256, //Green
@@ -94,6 +101,7 @@ int main()
             }
             if ( (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Left)){
                 shapeClicked(window, shapes);
+                std::cout << "Shape clicked " << std::endl;
             }   
         }
         

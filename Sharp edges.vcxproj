@@ -130,10 +130,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Resources\Classes\CustomRectangleShape.cpp" />
     <ClCompile Include="Resources\Classes\CustomCircleShape.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resources\Classes\CustomRectangleShape.h" />
     <ClInclude Include="Resources\Classes\CustomCircleShape.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
