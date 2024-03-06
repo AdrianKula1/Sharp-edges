@@ -25,6 +25,7 @@ bool oneSecondPassed(sf::Clock &clock) {
     }
     return result;
 }
+
 bool threeSecondsPassed(sf::Clock &clock) {
     bool result = false;
     sf::Time elapsedTime = clock.getElapsedTime();
@@ -75,22 +76,53 @@ shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<S
         } 
     }
 
-
     if (shapeToErase != shapes.end()) {
         eraseShape(shapes, shapeToErase);
     }
 
     return typeOfShape;
-    
+}
+
+void addNewShape(const sf::RenderWindow& window, std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
+    int shapeToAdd = rand() % 2;
+    std::unique_ptr<sf::Shape> newShape;
+    if (shapeToAdd) {
+        newShape = std::make_unique<CustomCircleShape>();
+    }
+    else {
+        newShape = std::make_unique<CustomRectangleShape>();
+    }
+    sf::Color randomColor = sf::Color(
+        std::rand() % 256, //Red
+        std::rand() % 256, //Green
+        std::rand() % 256  //Blue
+    );
+    newShape->setFillColor(randomColor);
+
+    int StartPositionX = rand() % (window.getSize().x - SHAPE_SIZE);
+    int StartPositionY = 0;
+    newShape->setPosition(StartPositionX, StartPositionY);
+
+    shapes.insert(std::move(newShape));
+}
+
+void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
+    std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
+    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+        if (shape->getPosition().y >= (window.getSize().y - SHAPE_SIZE)) {
+            shapeToErase = shapes.find(shape);
+            break;
+        }
+    }
+
+    if (shapeToErase != shapes.end()) {
+        eraseShape(shapes, shapeToErase);
+    }
 }
 
 int main()
 {
-
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
-    //CustomCircleShape shape(100.0f);
-    //shape.setPosition(0, 0);
-    //shape.setFillColor(sf::Color::Green);
 
     sf::Clock clock1s;
     sf::Clock clock3s;
@@ -109,59 +141,24 @@ int main()
     counterText.setFont(font); // Using default font
     counterText.setCharacterSize(30);
     counterText.setFillColor(sf::Color::White);
-    counterText.setPosition(0, 00);
+    counterText.setPosition(0, 0);
     int counter = 0;
 
 
     while (window.isOpen())
     {
-        
-
-
-
         //New shape appears every 3 seconds
         if (threeSecondsPassed(clock3s)) {
-            int shapeToAdd = rand() % 2;
-            std::unique_ptr<sf::Shape> newShape;
-            if (shapeToAdd) {
-                newShape = std::make_unique<CustomCircleShape>();
-            }else {
-                newShape = std::make_unique<CustomRectangleShape>();
-            }
-            sf::Color randomColor = sf::Color(
-                std::rand() % 256, //Red
-                std::rand() % 256, //Green
-                std::rand() % 256  //Blue
-            );
-            newShape->setFillColor(randomColor);
-
-            int StartPositionX = rand() % (window.getSize().x - SHAPE_SIZE);
-            int StartPositionY = 0;
-            newShape->setPosition(StartPositionX, StartPositionY);
-
-            shapes.insert(std::move(newShape));
-            
+            addNewShape(window, shapes);
         }
 
         //All shapes fall each second
         if (oneSecondPassed(clock1s)) {
-            //shape.setPosition(shape.getPosition().x, shape.getPosition().y + (SHAPE_SIZE / 2));
             makeAllShapesFall(shapes);
         }
 
         //See if any shape reached the bottom. If so, erase it
-        std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
-        for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
-            if (shape->getPosition().y >= (window.getSize().y - SHAPE_SIZE)) {
-                shapeToErase = shapes.find(shape);
-                break;
-            }   
-        }
-        if (shapeToErase != shapes.end()) {
-            eraseShape(shapes, shapeToErase);
-        }
-
-
+        checkAndEraseShapesAtBottom(window, shapes);
 
 
         //Detect user action
@@ -174,19 +171,20 @@ int main()
                 shapeType clickedShapeType = shapeClickedEvent(window, shapes);
                 if (clickedShapeType == RECTANGLE) {
                     counter--;
-                    std::cout << "Rectangle clicked" << std::endl;
                 }
                 else if (clickedShapeType == CIRCLE) {
                     counter++;
                 }
             }   
         }
+
+      
         
+        //Set the string of score
         counterText.setString("Score: " + std::to_string(counter));
 
 
         window.clear();
-        //window.draw(shape);
         window.draw(counterText);
         drawAllShapes(window, shapes);
         window.display();
