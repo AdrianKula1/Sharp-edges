@@ -43,9 +43,12 @@ void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
     }    
 }
 
+void eraseShape(std::unordered_set<ShapeUPointer>& shapes, std::unordered_set<ShapeUPointer>::iterator shapeToErase) {
+    shapes.erase(shapeToErase);
+}
 
 void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
-    std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();;
+    std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();
     for (const ShapeUPointer& shape : shapes) {
 
         CustomRectangleShape* square = dynamic_cast<CustomRectangleShape*>(shape.get());
@@ -54,21 +57,25 @@ void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPoint
         if (square) {
             if (square->isCursorHovering(window)) {
                 shapeToErase = shapes.find(shape);
+                break;
             }
         }
         else if (circle) {
             if (circle->isCursorHovering(window)) {
                 shapeToErase = shapes.find(shape);
+                break;
             }
         } 
     }
 
 
     if (shapeToErase != shapes.end()) {
-        shapes.erase(shapeToErase);
+        eraseShape(shapes, shapeToErase);
     }
     
 }
+
+
 
 int main()
 {
@@ -114,13 +121,23 @@ int main()
             
         }
 
+        std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();
+        for (const ShapeUPointer& shape : shapes) {
+            if (shape->getPosition().y >= (window.getSize().y - ShapeSize)) {
+                shapeToErase = shapes.find(shape);
+                break;
+            }   
+        }
+        if (shapeToErase != shapes.end()) {
+            eraseShape(shapes, shapeToErase);
+        }
+
         while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
             if ( (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Left)){
                 shapeClicked(window, shapes);
-                std::cout << "Shape clicked " << std::endl;
             }   
         }
         
