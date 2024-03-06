@@ -7,10 +7,14 @@
 #include <random>
 #include <iostream>
 
-#define ShapeUPointer std::unique_ptr<sf::Shape>
-#define ShapeSize 100
+#define SHAPE_UPOINTER_TYPE std::unique_ptr<sf::Shape>
+#define SHAPE_SIZE 100
 
-
+enum shapeType {
+    NONE = 0,
+    CIRCLE,
+    RECTANGLE
+};
 
 bool oneSecondPassed(sf::Clock &clock) {
     bool result = false;
@@ -31,25 +35,26 @@ bool threeSecondsPassed(sf::Clock &clock) {
     return result;
 }
 
-void drawAllShapes(sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
-    for (const ShapeUPointer &shape : shapes) {
-        window.draw((*shape));
+void drawAllShapes(sf::RenderWindow &window, std::unordered_set<SHAPE_UPOINTER_TYPE> &shapes) {
+    for (const SHAPE_UPOINTER_TYPE &shape : shapes) {
+        window.draw(*shape);
     }
 }
 
-void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
-    for (const ShapeUPointer& shape : shapes) {
-        shape->setPosition(shape->getPosition().x, shape->getPosition().y + (ShapeSize / 2));
+void makeAllShapesFall(std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
+    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+        shape->setPosition(shape->getPosition().x, shape->getPosition().y + (SHAPE_SIZE / 2));
     }    
 }
 
-void eraseShape(std::unordered_set<ShapeUPointer>& shapes, std::unordered_set<ShapeUPointer>::iterator shapeToErase) {
+void eraseShape(std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes, std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase) {
     shapes.erase(shapeToErase);
 }
 
-void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
-    std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();
-    for (const ShapeUPointer& shape : shapes) {
+shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<SHAPE_UPOINTER_TYPE> &shapes) {
+    std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
+    shapeType typeOfShape = NONE;
+    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
 
         CustomRectangleShape* square = dynamic_cast<CustomRectangleShape*>(shape.get());
         CustomCircleShape* circle = dynamic_cast<CustomCircleShape*>(shape.get());
@@ -57,12 +62,14 @@ void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPoint
         if (square) {
             if (square->isCursorHovering(window)) {
                 shapeToErase = shapes.find(shape);
+                typeOfShape = RECTANGLE;
                 break;
             }
         }
         else if (circle) {
             if (circle->isCursorHovering(window)) {
                 shapeToErase = shapes.find(shape);
+                typeOfShape = CIRCLE;
                 break;
             }
         } 
@@ -72,32 +79,47 @@ void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPoint
     if (shapeToErase != shapes.end()) {
         eraseShape(shapes, shapeToErase);
     }
+
+    return typeOfShape;
     
 }
 
-
-
 int main()
 {
+
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
-    CustomCircleShape shape(100.0f);
-    shape.setPosition(0, 0);
-    shape.setFillColor(sf::Color::Green);
+    //CustomCircleShape shape(100.0f);
+    //shape.setPosition(0, 0);
+    //shape.setFillColor(sf::Color::Green);
 
     sf::Clock clock1s;
     sf::Clock clock3s;
 
-    std::unordered_set<ShapeUPointer> shapes;
+    std::unordered_set<SHAPE_UPOINTER_TYPE> shapes;
+
+
+    // Create text object for counter
+    sf::Font font;
+    if (!font.loadFromFile("arial.ttf"))
+    {
+        std::cout << "Failed to load font " << std::endl;
+    }
+
+    sf::Text counterText;
+    counterText.setFont(font); // Using default font
+    counterText.setCharacterSize(30);
+    counterText.setFillColor(sf::Color::White);
+    counterText.setPosition(0, 00);
+    int counter = 0;
+
 
     while (window.isOpen())
     {
-        sf::Event event;
+        
 
-        if (oneSecondPassed(clock1s)) {
-            shape.setPosition(shape.getPosition().x, shape.getPosition().y + (ShapeSize / 2));
-            makeAllShapesFall(shapes);
-        }
 
+
+        //New shape appears every 3 seconds
         if (threeSecondsPassed(clock3s)) {
             int shapeToAdd = rand() % 2;
             std::unique_ptr<sf::Shape> newShape;
@@ -113,7 +135,7 @@ int main()
             );
             newShape->setFillColor(randomColor);
 
-            int StartPositionX = rand() % (window.getSize().x - ShapeSize);
+            int StartPositionX = rand() % (window.getSize().x - SHAPE_SIZE);
             int StartPositionY = 0;
             newShape->setPosition(StartPositionX, StartPositionY);
 
@@ -121,9 +143,16 @@ int main()
             
         }
 
-        std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();
-        for (const ShapeUPointer& shape : shapes) {
-            if (shape->getPosition().y >= (window.getSize().y - ShapeSize)) {
+        //All shapes fall each second
+        if (oneSecondPassed(clock1s)) {
+            //shape.setPosition(shape.getPosition().x, shape.getPosition().y + (SHAPE_SIZE / 2));
+            makeAllShapesFall(shapes);
+        }
+
+        //See if any shape reached the bottom. If so, erase it
+        std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
+        for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+            if (shape->getPosition().y >= (window.getSize().y - SHAPE_SIZE)) {
                 shapeToErase = shapes.find(shape);
                 break;
             }   
@@ -132,17 +161,33 @@ int main()
             eraseShape(shapes, shapeToErase);
         }
 
+
+
+
+        //Detect user action
+        sf::Event event;
         while (window.pollEvent(event)){
             if (event.type == sf::Event::Closed) {
                 window.close();
             }
             if ( (event.type == sf::Event::MouseButtonPressed) && (event.mouseButton.button == sf::Mouse::Left)){
-                shapeClicked(window, shapes);
+                shapeType clickedShapeType = shapeClickedEvent(window, shapes);
+                if (clickedShapeType == RECTANGLE) {
+                    counter--;
+                    std::cout << "Rectangle clicked" << std::endl;
+                }
+                else if (clickedShapeType == CIRCLE) {
+                    counter++;
+                }
             }   
         }
         
+        counterText.setString("Score: " + std::to_string(counter));
+
+
         window.clear();
-        window.draw(shape);
+        //window.draw(shape);
+        window.draw(counterText);
         drawAllShapes(window, shapes);
         window.display();
     }
