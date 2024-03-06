@@ -120,13 +120,17 @@ void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_
     }
 }
 
+void endTheGame(const sf::RenderWindow& window) {
+
+}
+
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
 
     sf::Clock clock1s;
     sf::Clock clock3s;
-
+    sf::Clock endgameClock;
     std::unordered_set<SHAPE_UPOINTER_TYPE> shapes;
 
 
@@ -178,7 +182,25 @@ int main()
             }   
         }
 
-      
+        //End the game if condition met
+        if (counter < 0 || counter >= 10) {
+            std::string outcome;
+            (counter < 0) ? outcome = "lost" : outcome = "won";
+            shapes.clear();
+            int secCounter = 4;
+            while (secCounter > 0) {
+                counterText.setString("You "+ outcome + "! Closing the game in " + std::to_string(secCounter) + " seconds");
+                window.clear();
+                window.draw(counterText);
+                window.display();
+                sf::Time elapsedTime = endgameClock.getElapsedTime();
+                if (elapsedTime.asSeconds() >= 1.0f) {
+                    endgameClock.restart();
+                    secCounter--;
+                }
+            }
+            window.close();
+        }
         
         //Set the string of score
         counterText.setString("Score: " + std::to_string(counter));
