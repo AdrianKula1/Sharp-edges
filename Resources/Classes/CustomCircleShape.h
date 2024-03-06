@@ -7,6 +7,5 @@ class CustomCircleShape: public sf::CircleShape
 public:
 	CustomCircleShape(float radius = 100);
 	bool isCursorHovering(const sf::Window &window);
-
 };
 

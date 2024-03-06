@@ -7,8 +7,9 @@
 #include <random>
 #include <iostream>
 
-#define ShapeUPointer std::shared_ptr<sf::Shape>
+#define ShapeUPointer std::unique_ptr<sf::Shape>
 #define ShapeSize 100
+
 
 
 bool oneSecondPassed(sf::Clock &clock) {
@@ -46,10 +47,20 @@ void makeAllShapesFall(std::unordered_set<ShapeUPointer>& shapes) {
 void shapeClicked(const sf::RenderWindow &window, std::unordered_set<ShapeUPointer> &shapes) {
     std::unordered_set<ShapeUPointer>::iterator shapeToErase = shapes.end();;
     for (const ShapeUPointer& shape : shapes) {
-        auto customCircleShape = std::dynamic_pointer_cast<CustomRectangleShape>(shape);
-        if (customCircleShape->isCursorHovering(window)) {
-            shapeToErase = shapes.find(shape);
+
+        CustomRectangleShape* square = dynamic_cast<CustomRectangleShape*>(shape.get());
+        CustomCircleShape* circle = dynamic_cast<CustomCircleShape*>(shape.get());
+
+        if (square) {
+            if (square->isCursorHovering(window)) {
+                shapeToErase = shapes.find(shape);
+            }
         }
+        else if (circle) {
+            if (circle->isCursorHovering(window)) {
+                shapeToErase = shapes.find(shape);
+            }
+        } 
     }
 
 
@@ -81,18 +92,26 @@ int main()
         }
 
         if (threeSecondsPassed(clock3s)) {
-            //std::unique_ptr<CustomCircleShape> newShape = std::make_unique<CustomCircleShape>(100);
-            std::unique_ptr<CustomRectangleShape> newShape = std::make_unique<CustomRectangleShape>(sf::Vector2f{100, 100});
+            int shapeToAdd = rand() % 2;
+            std::unique_ptr<sf::Shape> newShape;
+            if (shapeToAdd) {
+                newShape = std::make_unique<CustomCircleShape>();
+            }else {
+                newShape = std::make_unique<CustomRectangleShape>();
+            }
             sf::Color randomColor = sf::Color(
                 std::rand() % 256, //Red
                 std::rand() % 256, //Green
                 std::rand() % 256  //Blue
             );
             newShape->setFillColor(randomColor);
+
             int StartPositionX = rand() % (window.getSize().x - ShapeSize);
             int StartPositionY = 0;
             newShape->setPosition(StartPositionX, StartPositionY);
+
             shapes.insert(std::move(newShape));
+            
         }
 
         while (window.pollEvent(event)){

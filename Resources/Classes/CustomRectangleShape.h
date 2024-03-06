@@ -7,7 +7,6 @@ class CustomRectangleShape : public sf::RectangleShape
 public:
 	CustomRectangleShape(sf::Vector2f size = {100, 100});
 	bool isCursorHovering(const sf::Window& window);
-
 };
 
 
