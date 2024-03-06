@@ -16,20 +16,20 @@ enum shapeType {
     RECTANGLE
 };
 
-bool oneSecondPassed(sf::Clock &clock) {
+bool fallShapeTime(sf::Clock &clock, float seconds) {
     bool result = false;
     sf::Time elapsedTime = clock.getElapsedTime();
-    if (elapsedTime.asSeconds() >= 1.0f) {
+    if (elapsedTime.asSeconds() >= seconds) {
         clock.restart();
         result = true;
     }
     return result;
 }
 
-bool threeSecondsPassed(sf::Clock &clock) {
+bool appearShapeTime(sf::Clock &clock, float seconds) {
     bool result = false;
     sf::Time elapsedTime = clock.getElapsedTime();
-    if (elapsedTime.asSeconds() >= 3.0f) {
+    if (elapsedTime.asSeconds() >= seconds) {
         clock.restart();
         result = true;
     }
@@ -56,7 +56,7 @@ shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<S
     std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
     shapeType typeOfShape = NONE;
     for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
-
+        //can this be solved more efficently?
         CustomRectangleShape* square = dynamic_cast<CustomRectangleShape*>(shape.get());
         CustomCircleShape* circle = dynamic_cast<CustomCircleShape*>(shape.get());
 
@@ -120,16 +120,12 @@ void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_
     }
 }
 
-void endTheGame(const sf::RenderWindow& window) {
-
-}
-
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
 
-    sf::Clock clock1s;
-    sf::Clock clock3s;
+    sf::Clock fallClock;
+    sf::Clock apperanceClock;
     sf::Clock endgameClock;
     std::unordered_set<SHAPE_UPOINTER_TYPE> shapes;
 
@@ -152,12 +148,12 @@ int main()
     while (window.isOpen())
     {
         //New shape appears every 3 seconds
-        if (threeSecondsPassed(clock3s)) {
+        if (appearShapeTime(apperanceClock, 1.0f)) {
             addNewShape(window, shapes);
         }
 
         //All shapes fall each second
-        if (oneSecondPassed(clock1s)) {
+        if (fallShapeTime(fallClock, 1.0f)) {
             makeAllShapesFall(shapes);
         }
 
