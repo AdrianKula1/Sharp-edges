@@ -7,7 +7,7 @@
 #include <random>
 #include <iostream>
 
-#define SHAPE_UPOINTER_TYPE std::unique_ptr<sf::Shape>
+#define SHAPE_SPOINTER_TYPE std::shared_ptr<sf::Shape>
 #define SHAPE_SIZE 100
 
 enum shapeType {
@@ -36,29 +36,30 @@ bool appearShapeTime(sf::Clock &clock, float seconds) {
     return result;
 }
 
-void drawAllShapes(sf::RenderWindow &window, std::unordered_set<SHAPE_UPOINTER_TYPE> &shapes) {
-    for (const SHAPE_UPOINTER_TYPE &shape : shapes) {
+void drawAllShapes(sf::RenderWindow &window, std::unordered_set<SHAPE_SPOINTER_TYPE> &shapes) {
+    for (const SHAPE_SPOINTER_TYPE &shape : shapes) {
         window.draw(*shape);
     }
 }
 
-void makeAllShapesFall(std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
-    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+void makeAllShapesFall(std::unordered_set<SHAPE_SPOINTER_TYPE>& shapes) {
+    for (const SHAPE_SPOINTER_TYPE& shape : shapes) {
         shape->setPosition(shape->getPosition().x, shape->getPosition().y + (SHAPE_SIZE / 2));
     }    
 }
 
-void eraseShape(std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes, std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase) {
+void eraseShape(std::unordered_set<SHAPE_SPOINTER_TYPE>& shapes, std::unordered_set<SHAPE_SPOINTER_TYPE>::iterator shapeToErase) {
     shapes.erase(shapeToErase);
 }
 
-shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<SHAPE_UPOINTER_TYPE> &shapes) {
-    std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
+shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<SHAPE_SPOINTER_TYPE> &shapes) {
+    std::unordered_set<SHAPE_SPOINTER_TYPE>::iterator shapeToErase = shapes.end();
     shapeType typeOfShape = NONE;
-    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+    for (const SHAPE_SPOINTER_TYPE& shape : shapes) {
         //can this be solved more efficently?
-        CustomRectangleShape* square = dynamic_cast<CustomRectangleShape*>(shape.get());
-        CustomCircleShape* circle = dynamic_cast<CustomCircleShape*>(shape.get());
+        std::shared_ptr<CustomRectangleShape> square = std::dynamic_pointer_cast<CustomRectangleShape>(shape);
+        std::shared_ptr<CustomCircleShape> circle = std::dynamic_pointer_cast<CustomCircleShape>(shape);
+        //CustomCircleShape* circle = dynamic_cast<CustomCircleShape*>(shape.get());
 
         if (square) {
             if (square->isCursorHovering(window)) {
@@ -83,11 +84,11 @@ shapeType shapeClickedEvent(const sf::RenderWindow &window, std::unordered_set<S
     return typeOfShape;
 }
 
-void addNewShape(const sf::RenderWindow& window, std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
+void addNewShape(const sf::RenderWindow& window, std::unordered_set<SHAPE_SPOINTER_TYPE>& shapes) {
     int shapeToAdd = rand() % 2;
-    std::unique_ptr<sf::Shape> newShape;
+    std::shared_ptr<sf::Shape> newShape;
     if (shapeToAdd) {
-        newShape = std::make_unique<CustomCircleShape>();
+        newShape = std::make_shared<CustomCircleShape>();
     }
     else {
         newShape = std::make_unique<CustomRectangleShape>();
@@ -99,16 +100,16 @@ void addNewShape(const sf::RenderWindow& window, std::unordered_set<SHAPE_UPOINT
     );
     newShape->setFillColor(randomColor);
 
-    int StartPositionX = rand() % (window.getSize().x - SHAPE_SIZE);
-    int StartPositionY = 0;
+    float StartPositionX = (float)(rand() % (window.getSize().x - SHAPE_SIZE));
+    float StartPositionY = 0;
     newShape->setPosition(StartPositionX, StartPositionY);
 
     shapes.insert(std::move(newShape));
 }
 
-void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_set<SHAPE_UPOINTER_TYPE>& shapes) {
-    std::unordered_set<SHAPE_UPOINTER_TYPE>::iterator shapeToErase = shapes.end();
-    for (const SHAPE_UPOINTER_TYPE& shape : shapes) {
+void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_set<SHAPE_SPOINTER_TYPE>& shapes) {
+    std::unordered_set<SHAPE_SPOINTER_TYPE>::iterator shapeToErase = shapes.end();
+    for (const SHAPE_SPOINTER_TYPE& shape : shapes) {
         if (shape->getPosition().y >= (window.getSize().y - SHAPE_SIZE)) {
             shapeToErase = shapes.find(shape);
             break;
@@ -122,12 +123,12 @@ void checkAndEraseShapesAtBottom(const sf::RenderWindow& window, std::unordered_
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges");
+    sf::RenderWindow window(sf::VideoMode(1000, 1000), "Sharp edges", sf::Style::Titlebar | sf::Style::Close);
 
     sf::Clock fallClock;
     sf::Clock apperanceClock;
     sf::Clock endgameClock;
-    std::unordered_set<SHAPE_UPOINTER_TYPE> shapes;
+    std::unordered_set<SHAPE_SPOINTER_TYPE> shapes;
 
 
     // Create text object for counter
@@ -148,7 +149,7 @@ int main()
     while (window.isOpen())
     {
         //New shape appears every 3 seconds
-        if (appearShapeTime(apperanceClock, 1.0f)) {
+        if (appearShapeTime(apperanceClock, 3.0f)) {
             addNewShape(window, shapes);
         }
 
